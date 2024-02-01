@@ -9,8 +9,8 @@ Then, you can run the tests using the following command: `docker-compose up`
 The tests are executed with parameterization, using the "flaky" module to rerun failed tests (up to 3 times).\
 Allure reports are saved in the directory "allure-results".
 
-You can access the ready Allure report at http://localhost:5252\
-You can observe the test execution in real-time (VNC) at http://localhost:7900
+At http://localhost:5252 you can access the ready Allure report.\
+At http://localhost:7900 you can observe the test execution in real-time (VNC).
 
 I have provided detailed comments about the code's operation in the docstrings. Enjoy!
 

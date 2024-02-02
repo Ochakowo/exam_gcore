@@ -9,9 +9,6 @@ from locators import *
 class BaseFunc:
     """The class contains basic functions for Selenium and the page under test"""
 
-    def open_url(self, browser, url):
-        browser.get(url)
-
     def get_element(self, browser, by, locator):
         return WebDriverWait(browser, 10).until(EC.presence_of_element_located((by, locator)))
 
@@ -30,6 +27,12 @@ class BaseFunc:
         element = self.get_element(browser, *locator)
         browser.execute_script("arguments[0].scrollIntoView();", element)
         return element
+
+    def open_url(self, browser):
+        """Open hosting page"""
+        url = "https://gcore.com/hosting"
+        browser.get(url)
+        assert url == browser.current_url
 
     def server_selection(self, browser, serv: str):
         """
@@ -103,7 +106,7 @@ class BaseFunc:
         # ТУТ СЛОВИЛ БАГ НА САЙТЕ: при вводе граничных значений в input всегда появляется alert 'Out of range'
         # запускает assert и тест падает, что не соответствует моему ожиданию :) а так можно добавить проверку что ниже
         # assert (alert_msg_for_min_price.is_displayed() or alert_msg_for_max_price.is_displayed()) is False, \
-        #     f"'Out of range' message is displayed for the valid boundary value of {pr_min} or {pr_pax}"
+        #     f"'Out of range' message is displayed for the valid value of {pr_min} or {pr_pax}"
 
     def open_more_cards(self, browser):
         """

@@ -1,18 +1,18 @@
 EN::\
-To run the tests, please start the Docker.
+To run the tests please start the Docker.
 
-In the terminal, enter the command: `docker-compose build`\
-This will build the image if you are running it for the first time.
+In the terminal enter the command: `docker-compose build`\
+This command will build the image if you are running it for the first time.
 
-Then, you can run the tests using the following command: `docker-compose up`
+Then you can run the tests using the following command: `docker-compose up`
 
-The tests are executed with parameterization, using the "flaky" module to rerun failed tests (up to 3 times).\
+The tests are executed with parameterization using the "flaky" module to rerun failed tests (up to 3 times).\
 Allure reports are saved in the directory "allure-results".
 
 At http://localhost:5252 you can access the ready Allure report.\
 At http://localhost:7900 you can observe the test execution in real-time (VNC).
 
-I have provided detailed comments about the code's operation in the docstrings. Enjoy!
+I have provided detailed comments about the code and its operation in the docstrings. Enjoy!
 
 RU::\
 Для запуска тестов запустите Docker.

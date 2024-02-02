@@ -1,7 +1,6 @@
 import allure
 import pytest
 from flaky import flaky
-from locators import *
 from functions import *
 
 
@@ -9,18 +8,6 @@ class TestUI:
     @classmethod
     def setup_class(cls):
         cls.base_func = BaseFunc()
-
-    @allure.epic("TestUI")
-    @allure.feature("Open hosting page")
-    @allure.title("Start chrome and open page")
-    @allure.severity(allure.severity_level.MINOR)
-    @allure.tag('browser')
-    @allure.description("Checking the page opening.")
-    def test_url(self, browser):
-        url = "https://gcore.com/hosting"
-        self.base_func.open_url(browser, url)
-        with (allure.step(f"Check url")):
-            assert url == browser.current_url
 
     @allure.epic("TestUI")
     @allure.feature("Test for hosting calculator")
@@ -37,6 +24,8 @@ class TestUI:
                                                   ('Dedicated', '$')],
                              ids=("virtual_EUR", "virtual_USD", "dedicated_EUR", "dedicated_USD"))
     def test_for_hosting_calculator(self, browser, server, currency):
+        with (allure.step(f"Check url")):
+            self.base_func.open_url(browser)
         with allure.step(f"Choose server type {server}"):
             self.base_func.server_selection(browser, server)
         with allure.step(f"Choose the currency '{currency}'"):

@@ -7,7 +7,8 @@ import time
 @pytest.fixture(scope="session")
 def browser(wait=15):
     """The fixture checks if Chrome is running in the Docker container, then proceeds to open the browser."""
-    use_docker = False
+    use_docker = True
+
     options = webdriver.ChromeOptions()
     options.add_argument("--start-maximized")
     if use_docker:

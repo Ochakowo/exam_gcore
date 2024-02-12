@@ -20,8 +20,6 @@ services:
       - "5050:5050"
     volumes:
       - allure_results:/app/allure-results
-      - allure_report:/app/allure-report
-      - allure_projects:/app/projects
 
   allure-ui:
     image: "frankescobar/allure-docker-service-ui"
@@ -42,9 +40,6 @@ services:
       - "7900:7900"
     environment:
       - SE_VNC_NO_PASSWORD=1
-      - SE_NODE_MAX_SESSIONS=3
 
 volumes:
-  allure_projects:
-  allure_report:
   allure_results:

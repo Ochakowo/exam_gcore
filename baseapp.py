@@ -1,79 +1,80 @@
 import random
-import time
 from selenium.common import TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from locators import *
+from config import Config
 
 
 class BaseFunc:
     """The class contains basic functions for Selenium and the page under test"""
 
-    def get_element(self, browser, by, locator):
-        return WebDriverWait(browser, 10).until(EC.presence_of_element_located((by, locator)))
+    def __init__(self, browser):
+        self.browser = browser
+        self.base_url = Config.URL["BASE_URL"]
 
-    def get_elements(self, browser, by, locator):
-        return WebDriverWait(browser, 10).until(EC.presence_of_all_elements_located((by, locator)))
+    def get_element(self, locator):
+        return WebDriverWait(self.browser, Config.TIMEOUT).until(EC.presence_of_element_located(locator))
 
-    def click_element(self, browser, locator):
-        self.get_element(browser, *locator).click()
+    def get_elements(self, locator):
+        return WebDriverWait(self.browser, Config.TIMEOUT).until(EC.presence_of_all_elements_located(locator))
 
-    def input_text(self, browser, locator, text):
-        element = self.get_element(browser, *locator)
-        element.clear()
-        element.send_keys(text)
-
-    def scroll_to_element(self, browser, locator):
-        element = self.get_element(browser, *locator)
-        browser.execute_script("arguments[0].scrollIntoView();", element)
-        return element
-
-    def open_url(self, browser):
+    def open_url(self):
         """Open hosting page"""
-        url = "https://gcore.com/hosting"
-        browser.get(url)
-        assert url == browser.current_url
+        return self.browser.get(self.base_url)
 
-    def server_selection(self, browser, serv: str):
+
+class PageFunc(BaseFunc):
+    def click_element(self, locator):
+        return self.get_element(locator).click()
+
+    def input_text(self, locator, text):
+        element = self.get_element(locator)
+        element.clear()
+        return element.send_keys(text)
+
+    def scroll_to_element(self, locator):
+        element = self.get_element(locator)
+        return self.browser.execute_script("arguments[0].scrollIntoView();", element)
+
+    def server_selection(self, serv: str) -> None:
         """
         Choose server type dedicated or virtual
         :param serv: type of server
         """
-        self.scroll_to_element(browser, HostingPage.TOP_SIDE)
-        serv_buttons = self.get_elements(browser, *HostingPage.BUTTONS_DEDICATED_OR_VIRTUAL)
+        self.scroll_to_element(HostingPage.TOP_SIDE)
+        serv_buttons = self.get_elements(HostingPage.BUTTONS_DEDICATED_OR_VIRTUAL)
         for button in serv_buttons:
             if serv in button.text:
                 button.click()
                 break
 
-    def currency_selection(self, browser, cur: str):
+    def currency_selection(self, cur: str) -> None:
         """
         Choose the currency
         :param cur: our currency
         """
-        match cur:
-            case "$":
-                usd = self.get_element(browser, *HostingPage.BUTTON_RADIO_USD)
-                if 'active' in usd.get_attribute('class'):
-                    pass
-                else:
-                    self.click_element(browser, HostingPage.BUTTON_RADIO_USD)
-                assert 'active' in usd.get_attribute('class')
-            case "€":
-                eur = self.get_element(browser, *HostingPage.BUTTON_RADIO_EUR)
-                if 'active' in eur.get_attribute('class'):
-                    pass
-                else:
-                    self.click_element(browser, HostingPage.BUTTON_RADIO_EUR)
-                assert 'active' in eur.get_attribute('class')
-        time.sleep(1)
+        if cur == Config.DATA["CURRENCY_USD"]:
+            usd = self.get_element(HostingPage.BUTTON_RADIO_USD)
+            if 'active' in usd.get_attribute('class'):
+                pass
+            else:
+                usd.click()
+            assert 'active' in usd.get_attribute('class')
+        if cur == Config.DATA["CURRENCY_EUR"]:
+            eur = self.get_element(HostingPage.BUTTON_RADIO_EUR)
+            if 'active' in eur.get_attribute('class'):
+                pass
+            else:
+                eur.click()
+            assert 'active' in eur.get_attribute('class')
 
-    def get_boundary_validate_value(self, browser) -> tuple[int, int]:
+    def get_boundary_validate_value(self) -> tuple[int, int]:
         """
         Selecting the boundary values from an element containing these values.
         :return: 2 int values
         """
-        element = self.get_element(browser, *HostingPage.GET_PRICE_RANGE)
+        element = self.get_element(HostingPage.GET_PRICE_RANGE)
         bnd_min_price, bnd_max_price = [int(value) for value in element.text.split()]
         return bnd_min_price, bnd_max_price
 
@@ -92,29 +93,29 @@ class BaseFunc:
             eq_min_price, eq_max_price = eq_max_price, eq_min_price
         return eq_min_price, eq_max_price
 
-    def input_price(self, browser, pr_min: int, pr_pax: int):
+    def input_price(self, pr_min: int, pr_pax: int) -> None:
         """
         Entering values into the minimum and maximum price input fields.
         :param pr_min: minimum value
         :param pr_pax: maximum value
         """
-        self.input_text(browser, HostingPage.INPUT_MIN_PRICE, pr_min)
-        self.input_text(browser, HostingPage.INPUT_MAX_PRICE, pr_pax)
-        alert_msg_for_min_price = self.get_element(browser, *HostingPage.INFO_MSG_FOR_OUT_MIN_PRICE)
-        alert_msg_for_max_price = self.get_element(browser, *HostingPage.INFO_MSG_FOR_OUT_MAX_PRICE)
+        self.input_text(HostingPage.INPUT_MIN_PRICE, pr_min)
+        self.input_text(HostingPage.INPUT_MAX_PRICE, pr_pax)
+        # alert_msg_for_min_price = self.get_element(browser, *HostingPage.INFO_MSG_FOR_OUT_MIN_PRICE)
+        # alert_msg_for_max_price = self.get_element(browser, *HostingPage.INFO_MSG_FOR_OUT_MAX_PRICE)
 
         # ТУТ СЛОВИЛ БАГ НА САЙТЕ: при вводе граничных значений в input всегда появляется alert 'Out of range'
         # запускает assert и тест падает, что не соответствует моему ожиданию :) а так можно добавить проверку что ниже
         # assert (alert_msg_for_min_price.is_displayed() or alert_msg_for_max_price.is_displayed()) is False, \
         #     f"'Out of range' message is displayed for the valid value of {pr_min} or {pr_pax}"
 
-    def open_more_cards(self, browser):
+    def open_more_cards(self) -> None:
         """
         The function opens all the cards on the page; if the element is not found, it triggers an exception.
         """
         while True:
             try:
-                show_more_button = self.get_element(browser, *HostingPage.BUTTON_SHOW_MORE_SERVERS)
+                show_more_button = self.get_element(HostingPage.BUTTON_SHOW_MORE_SERVERS)
                 if show_more_button.text in ["Show more dedicated servers", "Show more virtual servers"]:
                     show_more_button.click()
                 else:
@@ -122,7 +123,7 @@ class BaseFunc:
             except TimeoutException:
                 break
 
-    def get_price_and_currency_servers(self, browser, cur: str, eq_pr_min: int, eq_pr_pax: int):
+    def get_price_and_currency_servers(self, cur: str, eq_pr_min: int, eq_pr_pax: int) -> None:
         """
         Checking for compliance with the price range and correspondence to the selected currency.
         :param cur: currency
@@ -130,7 +131,7 @@ class BaseFunc:
         :param eq_pr_pax: maximum equivalent value
         :return:
         """
-        cards = self.get_elements(browser, *HostingPage.All_CARDS_SERVERS)
+        cards = self.get_elements(HostingPage.All_CARDS_SERVERS)
         prices, currencies = [], []
         for card in cards:
             price_element = card.find_element(By.CLASS_NAME, 'price-card_price')
@@ -138,7 +139,7 @@ class BaseFunc:
             currency = price_element.find_element(By.TAG_NAME, 'sub').text.strip()
             prices.append(price)
             currencies.append(currency)
-        assert all(eq_pr_min <= price <= eq_pr_pax for price in prices) is True, \
+        assert all(eq_pr_min <= price <= eq_pr_pax for price in prices), \
             f"The price of the servers in the displayed cards is outside the range of {eq_pr_min} to {eq_pr_pax}."
-        assert all(currency == cur for currency in currencies) is True, \
+        assert all(currency == cur for currency in currencies), \
             f"The currency of the servers in the displayed cards is different from {cur}."
